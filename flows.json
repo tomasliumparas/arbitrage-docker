@@ -1,12 +1,5 @@
 [
     {
-        "id": "623ce79e.5e3a58",
-        "type": "tab",
-        "label": "Prices",
-        "disabled": false,
-        "info": ""
-    },
-    {
         "id": "5ae339a8.410268",
         "type": "function",
         "z": "623ce79e.5e3a58",
@@ -246,7 +239,7 @@
         ]
     },
     {
-        "id": "7484ad79.7c4f34",
+        "id": "4adb7648.327448",
         "type": "http in",
         "z": "623ce79e.5e3a58",
         "name": "",
@@ -255,15 +248,15 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 90,
-        "y": 720,
+        "y": 740,
         "wires": [
             [
-                "7578205b.294f8"
+                "ab0b0f25.297f"
             ]
         ]
     },
     {
-        "id": "7578205b.294f8",
+        "id": "ab0b0f25.297f",
         "type": "function",
         "z": "623ce79e.5e3a58",
         "name": "",
@@ -271,15 +264,15 @@
         "outputs": 1,
         "noerr": 0,
         "x": 250,
-        "y": 720,
+        "y": 740,
         "wires": [
             [
-                "d82b33b3.d751b"
+                "9892a2f2.ecc4"
             ]
         ]
     },
     {
-        "id": "d82b33b3.d751b",
+        "id": "9892a2f2.ecc4",
         "type": "http response",
         "z": "623ce79e.5e3a58",
         "name": "",
@@ -288,7 +281,7 @@
             "content-type": "text/plain"
         },
         "x": 410,
-        "y": 720,
+        "y": 740,
         "wires": []
     }
 ]
