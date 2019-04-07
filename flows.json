@@ -2,7 +2,7 @@
     {
         "id": "623ce79e.5e3a58",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Prices",
         "disabled": false,
         "info": ""
     },
@@ -30,7 +30,7 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "repeat": "",
+        "repeat": "30",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
@@ -188,14 +188,16 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "repeat": "5",
+        "repeat": "10",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
         "x": 85,
         "y": 560,
         "wires": [
-            []
+            [
+                "f95cd69e.075158"
+            ]
         ]
     },
     {
@@ -244,70 +246,49 @@
         ]
     },
     {
-        "id": "3189635c.4517bc",
-        "type": "function",
-        "z": "623ce79e.5e3a58",
-        "name": "AssetPairs",
-        "func": "\nmsg.url = \"https://binance.com/api/v1/exchangeInfo\"\n\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 270,
-        "y": 380,
-        "wires": [
-            [
-                "9b4dfb0d.ca57e8"
-            ]
-        ]
-    },
-    {
-        "id": "2c764454.f871ec",
-        "type": "inject",
-        "z": "623ce79e.5e3a58",
-        "name": ">",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 90,
-        "y": 380,
-        "wires": [
-            [
-                "3189635c.4517bc"
-            ]
-        ]
-    },
-    {
-        "id": "9b4dfb0d.ca57e8",
-        "type": "http request",
-        "z": "623ce79e.5e3a58",
-        "name": "Binance",
-        "method": "GET",
-        "ret": "obj",
-        "url": "",
-        "tls": "",
-        "x": 420,
-        "y": 380,
-        "wires": [
-            [
-                "8ed73367.d8fc3"
-            ]
-        ]
-    },
-    {
-        "id": "8ed73367.d8fc3",
-        "type": "debug",
+        "id": "7484ad79.7c4f34",
+        "type": "http in",
         "z": "623ce79e.5e3a58",
         "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "x": 570,
-        "y": 403,
+        "url": "/metrics",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 720,
+        "wires": [
+            [
+                "7578205b.294f8"
+            ]
+        ]
+    },
+    {
+        "id": "7578205b.294f8",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "",
+        "func": "var metrics = global.get(\"metrics\");\nvar result = [];\n\nObject.keys(metrics)\n    .forEach(metric => {\n        \n        metrics[metric].forEach(measure =>{\n            var str = `${measure.name}${JSON.stringify(measure.labels).replace(/\"(\\w+)\"\\s*:/g, '$1=')} ${measure.value}`.toString()\n            result.push(str)\n        })\n    })\n\nmsg.payload = result.join(\"\\n\")\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 250,
+        "y": 720,
+        "wires": [
+            [
+                "d82b33b3.d751b"
+            ]
+        ]
+    },
+    {
+        "id": "d82b33b3.d751b",
+        "type": "http response",
+        "z": "623ce79e.5e3a58",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "content-type": "text/plain"
+        },
+        "x": 410,
+        "y": 720,
         "wires": []
     }
 ]

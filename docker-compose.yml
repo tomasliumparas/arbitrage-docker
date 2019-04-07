@@ -24,7 +24,7 @@ services:
         ports:
             - '9090:9090'
         volumes:
-            - 'C:\Arbitrage:/config'
+            - '/Users/alizay/Documents/arbitrage-docker:/config'
             - 'prom-data:/prometheus'
         container_name: prometheus
         restart: unless-stopped
@@ -56,6 +56,6 @@ services:
             - 'grafana-data:/var/lib/grafana'
         container_name: grafana
         restart: unless-stopped
-        image: nodered/node-red-docker
+        image: grafana/grafana
         networks:
             - arbitrage-network
