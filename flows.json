@@ -1,0 +1,313 @@
+[
+    {
+        "id": "623ce79e.5e3a58",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "5ae339a8.410268",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "AssetPairs",
+        "func": "// last - Last BTC price.\n// high - Last 24 hours price high.\n// low - Last 24 hours price low.\n// vwap - Last 24 hours volume weighted average price.\n// volume - Last 24 hours volume.\n// bid - Highest buy order.\n// ask - Lowest sell order.\n// timestamp - Unix timestamp date and time.\n// open - First price of the day.\nmsg.url = \"https://api.kraken.com/0/public/AssetPairs\"\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 270,
+        "y": 200,
+        "wires": [
+            [
+                "1c6527f8.e59c68"
+            ]
+        ]
+    },
+    {
+        "id": "8cef967a.ae5778",
+        "type": "inject",
+        "z": "623ce79e.5e3a58",
+        "name": ">",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 90,
+        "y": 200,
+        "wires": [
+            [
+                "5ae339a8.410268"
+            ]
+        ]
+    },
+    {
+        "id": "1c6527f8.e59c68",
+        "type": "http request",
+        "z": "623ce79e.5e3a58",
+        "name": "Kraken",
+        "method": "GET",
+        "ret": "obj",
+        "url": "",
+        "tls": "",
+        "x": 420,
+        "y": 200,
+        "wires": [
+            [
+                "47f3c2d7.42fb7c"
+            ]
+        ]
+    },
+    {
+        "id": "47f3c2d7.42fb7c",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "Price list",
+        "func": "var data = msg.payload.result;\n\nvar result = Object.keys(data)\n    .filter(key => !key.includes(\".d\"))\n\n\nmsg.payload = result;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 580,
+        "y": 200,
+        "wires": [
+            [
+                "1777e295.bc4c1d"
+            ]
+        ]
+    },
+    {
+        "id": "1777e295.bc4c1d",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "Ticker",
+        "func": "// last - Last BTC price.\n// high - Last 24 hours price high.\n// low - Last 24 hours price low.\n// vwap - Last 24 hours volume weighted average price.\n// volume - Last 24 hours volume.\n// bid - Highest buy order.\n// ask - Lowest sell order.\n// timestamp - Unix timestamp date and time.\n// open - First price of the day.\n\nvar pairs = msg.payload.join(\",\")\n\nmsg.url = `https://api.kraken.com/0/public/Ticker?pair=${pairs}`\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 730,
+        "y": 200,
+        "wires": [
+            [
+                "7658e241.6254ec"
+            ]
+        ]
+    },
+    {
+        "id": "7658e241.6254ec",
+        "type": "http request",
+        "z": "623ce79e.5e3a58",
+        "name": "Kraken",
+        "method": "GET",
+        "ret": "obj",
+        "url": "",
+        "tls": "",
+        "x": 880,
+        "y": 200,
+        "wires": [
+            [
+                "9e91056a.c18278"
+            ]
+        ]
+    },
+    {
+        "id": "f95cd69e.075158",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "Metrics",
+        "func": "const metric = \"nrarbitrage_currency\";\n\nvar currencies = []\nvar exchanges = flow.get(\"exchanges\")\n\nvar data = Object.keys(exchanges)\n    .forEach(exchange => {\n        exchanges[exchange]\n            .forEach(pair =>{\n                pair.name = metric\n                currencies.push(pair)\n            })\n    })\nvar metrics = global.get(\"metrics\") || {};\n\nmetrics[metric] = currencies\n\n",
+        "outputs": 0,
+        "noerr": 0,
+        "x": 260,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "c135667e.d14ef8",
+        "type": "inject",
+        "z": "623ce79e.5e3a58",
+        "name": ">",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 90,
+        "y": 120,
+        "wires": [
+            [
+                "af88712b.3bb6f"
+            ]
+        ]
+    },
+    {
+        "id": "af88712b.3bb6f",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "flow.exchanges",
+        "func": "flow.set(\"exchanges\", {})",
+        "outputs": 0,
+        "noerr": 0,
+        "x": 260,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "9e91056a.c18278",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "",
+        "func": "var exchanges = flow.get(\"exchanges\") || {};\nvar data = msg.payload.result;\n\nvar result = Object.keys(data)\n        .map(x => {\n            return {\n                timestamp: Date.now(),\n                value: data[x].a[0],\n                labels: {arbitrage: \"kraken\",source: \"kraken\", class: \"crypto\" ,pair: x}\n            }\n        })\n\nexchanges.kraken = result;\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1030,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b0a39a6f.28d438",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "",
+        "func": "var exchanges = flow.get(\"exchanges\") || {};\nvar data = msg.payload.result;\n\nvar result = Object.keys(data)\n        .map(x => {\n            return {\n                timestamp: Date.now(),\n                value: data[x].a[0],\n                labels: {arbitrage: \"kraken2\",source: \"kraken2\", class: \"crypto\" ,pair: x}\n            }\n        })\n\nexchanges.kraken2 = result;\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1030,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5f85c3b0.ccc96c",
+        "type": "inject",
+        "z": "623ce79e.5e3a58",
+        "name": ">",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 85,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e71859e0.baed28",
+        "type": "inject",
+        "z": "623ce79e.5e3a58",
+        "name": "Clear",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 984,
+        "y": 100,
+        "wires": [
+            [
+                "8160d248.42805"
+            ]
+        ]
+    },
+    {
+        "id": "8160d248.42805",
+        "type": "change",
+        "z": "623ce79e.5e3a58",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "exchanges",
+                "pt": "flow",
+                "to": "{}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1170,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3189635c.4517bc",
+        "type": "function",
+        "z": "623ce79e.5e3a58",
+        "name": "AssetPairs",
+        "func": "\nmsg.url = \"https://binance.com/api/v1/exchangeInfo\"\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 270,
+        "y": 380,
+        "wires": [
+            [
+                "9b4dfb0d.ca57e8"
+            ]
+        ]
+    },
+    {
+        "id": "2c764454.f871ec",
+        "type": "inject",
+        "z": "623ce79e.5e3a58",
+        "name": ">",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 90,
+        "y": 380,
+        "wires": [
+            [
+                "3189635c.4517bc"
+            ]
+        ]
+    },
+    {
+        "id": "9b4dfb0d.ca57e8",
+        "type": "http request",
+        "z": "623ce79e.5e3a58",
+        "name": "Binance",
+        "method": "GET",
+        "ret": "obj",
+        "url": "",
+        "tls": "",
+        "x": 420,
+        "y": 380,
+        "wires": [
+            [
+                "8ed73367.d8fc3"
+            ]
+        ]
+    },
+    {
+        "id": "8ed73367.d8fc3",
+        "type": "debug",
+        "z": "623ce79e.5e3a58",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 570,
+        "y": 403,
+        "wires": []
+    }
+]

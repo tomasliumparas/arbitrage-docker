@@ -1,0 +1,61 @@
+# Some tools to help with compose files:
+# https://composerize.com/
+# https://dockstation.io/
+
+version: "3.2"
+
+networks:
+    arbitrage-network:
+        external:
+            name: arbitrage-net
+volumes:
+    prom-data:
+        external:
+            name: prometheus-data
+    nodered-data:
+        external:
+            name: nodered-data
+    grafana-data:
+        external:
+            name: grafana-data
+
+services:
+    prometheus:
+        ports:
+            - '9090:9090'
+        volumes:
+            - 'C:\Arbitrage:/config'
+            - 'prom-data:/prometheus'
+        container_name: prometheus
+        restart: unless-stopped
+        image: prom/prometheus
+        command:
+            - --config.file=/config/prometheus.yml
+            - --storage.tsdb.retention.time=90d
+            - --storage.tsdb.path=/prometheus
+            - --web.enable-lifecycle
+            - --web.enable-admin-api
+        networks:
+            - arbitrage-network
+
+    nodered:
+        ports:
+            - '1880:1880'
+        volumes:
+            - 'nodered-data:/data'
+        container_name: nodered
+        restart: unless-stopped
+        image: nodered/node-red-docker
+        networks:
+            - arbitrage-network
+
+    grafana:
+        ports:
+            - '3000:3000'
+        volumes:
+            - 'grafana-data:/var/lib/grafana'
+        container_name: grafana
+        restart: unless-stopped
+        image: nodered/node-red-docker
+        networks:
+            - arbitrage-network
